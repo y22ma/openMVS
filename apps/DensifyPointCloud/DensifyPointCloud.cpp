@@ -89,6 +89,8 @@ bool Initialize(size_t argc, LPCTSTR* argv)
 	unsigned nMinViewsFuse;
 	unsigned nEstimateColors;
 	unsigned nEstimateNormals;
+  float fDepthDiffThreshold;
+  unsigned nOptimizeFlags;
 	boost::program_options::options_description config("Densify options");
 	config.add_options()
 		("input-file,i", boost::program_options::value<std::string>(&OPT::strInputFileName), "input filename containing camera poses and image list")
@@ -99,6 +101,8 @@ bool Initialize(size_t argc, LPCTSTR* argv)
 		("number-views-fuse", boost::program_options::value<unsigned>(&nMinViewsFuse)->default_value(3), "minimum number of images that agrees with an estimate during fusion in order to consider it inlier")
 		("estimate-colors", boost::program_options::value<unsigned>(&nEstimateColors)->default_value(1), "estimate the colors for the dense point-cloud")
 		("estimate-normals", boost::program_options::value<unsigned>(&nEstimateNormals)->default_value(0), "estimate the normals for the dense point-cloud")
+		("depth-diff-threshold", boost::program_options::value<float>(&fDepthDiffThreshold)->default_value(0.01), "threshold (in % difference) when filtering depth maps")
+    ("optimize-flags", boost::program_options::value<unsigned>(&nOptimizeFlags)->default_value(7), "flags for controlling optimization, OR-ed combination of REMOVE_SPECKLES=1, FILL_GAPS=2, ADJUST_FILTER=4")
 		;
 
 	// hidden options, allowed both on command line and
@@ -168,6 +172,12 @@ bool Initialize(size_t argc, LPCTSTR* argv)
 	OPTDENSE::nMinViewsFuse = nMinViewsFuse;
 	OPTDENSE::nEstimateColors = nEstimateColors;
 	OPTDENSE::nEstimateNormals = nEstimateNormals;
+  OPTDENSE::fDepthDiffThreshold = fDepthDiffThreshold;
+  OPTDENSE::nOptimize = nOptimizeFlags;
+  //OPTDENSE::nMinViewsTrustPoint = 3;  // debug
+  
+  std::cout<<"Using fDepthDiffThreshold: "<<fDepthDiffThreshold<<std::endl;
+  
 	if (!bValidConfig)
 		OPTDENSE::oConfig.Save(OPT::strDenseConfigFileName);
 
