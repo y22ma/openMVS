@@ -33,6 +33,7 @@
 #include "Scene.h"
 #define _USE_OPENCV
 #include "Interface.h"
+#include "Interface.h"
 
 using namespace MVS;
 
