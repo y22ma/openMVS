@@ -57,8 +57,8 @@ int nProcessPriority;
 unsigned nMaxThreads;
 String strConfigFileName;
 boost::program_options::variables_map vm;
-uint32_t gridWidth;
-uint32_t gridHeight;
+unsigned gridWidth;
+unsigned gridHeight;
 } // namespace OPT
 
 // initialize and parse the command line parameters
@@ -67,7 +67,7 @@ bool Initialize(size_t argc, LPCTSTR* argv)
   // initialize log and console
   OPEN_LOG();
   OPEN_LOGCONSOLE();
-  
+
   // group of options allowed only on command line
   boost::program_options::options_description generic("Generic options");
   generic.add_options()
@@ -91,8 +91,9 @@ bool Initialize(size_t argc, LPCTSTR* argv)
   // group of options allowed both on command line and in config file
   boost::program_options::options_description config("Scene Split Options");
   config.add_options()
-  	("grid-width", boost::program_options::value<uint32_t>(&OPT::gridWidth), "grid width")
-  	("grid-height", boost::program_options::value<uint32_t>(&OPT::gridHeight), "grid height");
+        ("input-file,i", boost::program_options::value<std::string>(&OPT::strInputFileName), "input filename containing camera poses and image list")
+  	("grid-width", boost::program_options::value<unsigned>(&OPT::gridWidth), "grid width")
+  	("grid-height", boost::program_options::value<unsigned>(&OPT::gridHeight), "grid height");
   
   boost::program_options::options_description cmdline_options;
   cmdline_options.add(generic).add(config);
@@ -142,7 +143,7 @@ bool Initialize(size_t argc, LPCTSTR* argv)
   Util::ensureValidPath(OPT::strOutputFileName);
   Util::ensureUnifySlash(OPT::strOutputFileName);
   if (OPT::strOutputFileName.IsEmpty())
-    OPT::strOutputFileName = Util::getFullFileName(OPT::strInputFileName) + _T("_dense.mvs");
+    OPT::strOutputFileName = Util::getFullFileName(OPT::strInputFileName) + _T(".mvs");
   
   #ifdef _USE_BREAKPAD
   // start memory dumper
@@ -154,14 +155,17 @@ bool Initialize(size_t argc, LPCTSTR* argv)
 // finalize application instance
 void Finalize()
 {
+  printf("YO\n");
 #if TD_VERBOSE != TD_VERBOSE_OFF
   // print memory statistics
   Util::LogMemoryInfo();
 #endif
   
-  CLOSE_LOGFILE();
+  printf("YO\n");
   CLOSE_LOGCONSOLE();
+  printf("YO\n");
   CLOSE_LOG();
+  printf("YO\n");
 }
 
 
@@ -174,12 +178,16 @@ int main(int argc, LPCTSTR* argv)
 #endif
   
   if (!Initialize(argc, argv))
+  {
     return EXIT_FAILURE;
+  }
   
   Scene scene(OPT::nMaxThreads);
   // load and estimate a dense point-cloud
   if (!scene.Load(MAKE_PATH_SAFE(OPT::strInputFileName)))
+  {
     return EXIT_FAILURE;
+  }
   if (scene.pointcloud.IsEmpty()) {
     VERBOSE("error: empty initial point-cloud");
     return EXIT_FAILURE;
@@ -193,6 +201,7 @@ int main(int argc, LPCTSTR* argv)
   for (uint32_t i = 0; i < gridSize; i++)
   {
     subScenes[i].reset(new Scene(scene));
+    subScenes[i]->pointcloud.Release();
   }
 
   // convert to pcl
@@ -210,40 +219,82 @@ int main(int argc, LPCTSTR* argv)
   // getting bounds
   pcl::PointXYZ maxPt, minPt;
   pcl::getMinMax3D(*ptcloud, minPt, maxPt);
+  std::cout << minPt << std::endl;
+  std::cout << maxPt << std::endl;
   float tileWidth  = (maxPt.x - minPt.x)/OPT::gridWidth;
   float tileHeight = (maxPt.y - minPt.y)/OPT::gridHeight;
   for (uint32_t i = 0; i < OPT::gridHeight; i++)
   {
     for (uint32_t j = 0; j < OPT::gridWidth; j++)
     {
+      printf("i: %d, j: %d\n", i, j);
       pcl::PassThrough<pcl::PointXYZ> ptfilter(true);
       ptfilter.setInputCloud(ptcloud);
       
-      float tileXMin = minPt.x + tileWidth*j;	
-      float tileYMin = minPt.y + tileHeight*i;	
-      float tileXMax = minPt.x + tileWidth*(j + 1);	
-      float tileYMax = minPt.y + tileHeight*(i + 1);	
+      double tileXMin = minPt.x + tileWidth*j;	
+      double tileYMin = minPt.y + tileHeight*i;	
+      double tileXMax = minPt.x + tileWidth*(j + 1);	
+      double tileYMax = minPt.y + tileHeight*(i + 1);	
+      printf("tile xmin: %f, xmax: %f, ymin: %f, ymax: %f\n", tileXMin, tileXMax, tileYMin, tileYMax);
       
-      boost::shared_ptr<std::vector<int> > indices_x;
+      boost::shared_ptr<std::vector<int> > indices_x(new std::vector<int>());
       ptfilter.setFilterFieldName("x");
       ptfilter.setFilterLimits(tileXMin, tileXMax);
-      ptfilter.setNegative (true);
       ptfilter.filter(*indices_x);
+      printf("filtered x size %d\n",  indices_x->size());
       
-      boost::shared_ptr<std::vector<int> > indices_xy;
+      boost::shared_ptr<std::vector<int> > indices_xy(new std::vector<int>());
       ptfilter.setIndices (indices_x);
       ptfilter.setFilterFieldName("y");
       ptfilter.setFilterLimits(tileYMin, tileYMax);
-      ptfilter.setNegative (true);
       ptfilter.filter(*indices_xy);
+      printf("filtered y size %d\n",  indices_xy->size());
       
-      std::vector<int> indices_rem;
-      indices_rem = *(ptfilter.getRemovedIndices());
-      for (uint32_t k = 0; k < indices_rem.size(); k++)
+      uint32_t sIdx = i*OPT::gridWidth + j;
+      subScenes[sIdx]->pointcloud.points.Resize(indices_xy->size()); 
+      if (!scene.pointcloud.colors.IsEmpty())
       {
-        subScenes[i*OPT::gridWidth + j]->pointcloud.RemovePoint(indices_rem[k]);
+        printf("has color\n");
+        subScenes[sIdx]->pointcloud.colors.Resize(indices_xy->size()); 
+      }
+      if (!scene.pointcloud.normals.IsEmpty())
+      {
+        printf("has normal\n");
+        subScenes[sIdx]->pointcloud.normals.Resize(indices_xy->size()); 
+      }
+      if (!scene.pointcloud.pointWeights.IsEmpty())
+      {
+        printf("has view\n");
+        subScenes[sIdx]->pointcloud.pointWeights.Resize(indices_xy->size()); 
+      }
+      if (!scene.pointcloud.pointViews.IsEmpty())
+      {
+        printf("has weight\n");
+        subScenes[sIdx]->pointcloud.pointViews.Resize(indices_xy->size()); 
+      }
+      for (uint32_t k = 0; k < indices_xy->size(); k++)
+      {
+        uint32_t idx = (*indices_xy)[k];
+        subScenes[sIdx]->pointcloud.points[k] = scene.pointcloud.points[idx];
+        if (!scene.pointcloud.colors.IsEmpty())
+        {
+          subScenes[sIdx]->pointcloud.colors[k] = scene.pointcloud.colors[idx];
+        }
+        if (!scene.pointcloud.normals.IsEmpty())
+        {
+          subScenes[sIdx]->pointcloud.normals[k] = scene.pointcloud.normals[idx];
+        }
+        if (!scene.pointcloud.pointViews.IsEmpty())
+        {
+          subScenes[sIdx]->pointcloud.pointViews[k] = scene.pointcloud.pointViews[idx];
+        }
+        if (!scene.pointcloud.pointWeights.IsEmpty())
+        {
+          subScenes[sIdx]->pointcloud.pointWeights[k] = scene.pointcloud.pointWeights[idx];
+        }
       }
 
+      printf("saving\n");
       // save the final mesh
       const String baseFileName(MAKE_PATH_SAFE(Util::getFullFileName(OPT::strOutputFileName) +
           "_" + std::to_string(i) + "_" + std::to_string(j)));
