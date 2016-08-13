@@ -196,6 +196,10 @@ int main(int argc, LPCTSTR* argv)
     {
       scene.pointcloud.points.RemoveIdx(idx);
     }
+    else
+    {
+      idx++;
+    }
   }
 
   // save the final mesh
