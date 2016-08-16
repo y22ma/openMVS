@@ -196,8 +196,7 @@ int main(int argc, LPCTSTR* argv)
   std::shared_ptr<Scene> subScenes[OPT::gridWidth*OPT::gridHeight];
   for (uint32_t i = 0; i < gridSize; i++)
   {
-    subScenes[i].reset(new Scene(scene));
-    subScenes[i]->pointcloud.Release();
+    subScenes[i].reset(new Scene());
   }
 
   // convert to pcl
@@ -287,6 +286,7 @@ int main(int argc, LPCTSTR* argv)
           "_" + std::to_string(i) + "_" + std::to_string(j)));
       subScenes[i*OPT::gridWidth + j]->Save(baseFileName+_T(".mvs"), (ARCHIVE_TYPE)OPT::nArchiveType);
       subScenes[i*OPT::gridWidth + j]->pointcloud.Save(baseFileName+_T(".ply"));
+      subScenes[i*OPT::gridWidth + j]->pointcloud.Release();
     }
   }
   
