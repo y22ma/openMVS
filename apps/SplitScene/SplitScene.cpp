@@ -35,6 +35,7 @@
 #include <pcl/point_types.h>
 #include <pcl/common/common.h>
 #include <pcl/filters/passthrough.h>
+#include <pcl/io/ply_io.h>
 #include <string>
 
 using namespace MVS;
@@ -196,7 +197,8 @@ int main(int argc, LPCTSTR* argv)
   std::shared_ptr<Scene> subScenes[OPT::gridWidth*OPT::gridHeight];
   for (uint32_t i = 0; i < gridSize; i++)
   {
-    subScenes[i].reset(new Scene());
+    subScenes[i].reset(new Scene(scene));
+    subScenes[i]->pointcloud.Release();
   }
 
   // convert to pcl
@@ -204,20 +206,52 @@ int main(int argc, LPCTSTR* argv)
   ptcloud->width = scene.pointcloud.points.size();
   ptcloud->height = 1;
   ptcloud->points.resize(ptcloud->width);
+  double minX, minY, minZ;
+  double maxX, maxY, maxZ;
+  minX = minY = minZ = 100000;
+  maxX = maxY = maxZ = -100000;
   for (uint32_t i = 0; i < scene.pointcloud.points.size(); i++)
   {
     ptcloud->points[i].x = scene.pointcloud.points[i][0];
     ptcloud->points[i].y = scene.pointcloud.points[i][1];
     ptcloud->points[i].z = scene.pointcloud.points[i][2];
+    if (ptcloud->points[i].x <= minX)
+    {
+      minX = ptcloud->points[i].x;
+    }
+    if (ptcloud->points[i].x >= maxX)
+    {
+      maxX = ptcloud->points[i].x;
+    } 
+
+    if (ptcloud->points[i].y <= minY)
+    {
+      minY = ptcloud->points[i].y;
+    }
+    if (ptcloud->points[i].y >= maxY)
+    {
+      maxY = ptcloud->points[i].y;
+    } 
+
+    if (ptcloud->points[i].z <= minZ)
+    {
+      minZ = ptcloud->points[i].z;
+    }
+    if (ptcloud->points[i].z >= maxZ)
+    {
+      maxZ = ptcloud->points[i].z;
+    } 
   }
+  //pcl::PLYWriter writer;
+  //writer.write("/tmp/pcl_scene.ply", *ptcloud);
 
   // getting bounds
-  pcl::PointXYZ maxPt, minPt;
-  pcl::getMinMax3D(*ptcloud, minPt, maxPt);
-  std::cout << minPt << std::endl;
-  std::cout << maxPt << std::endl;
-  float tileWidth  = (maxPt.x - minPt.x)/OPT::gridWidth;
-  float tileHeight = (maxPt.y - minPt.y)/OPT::gridHeight;
+  std::cout << minX << " " << minY << " " << minZ << std::endl;
+  std::cout << maxX << " " << maxY << " " << maxZ << std::endl;
+  float tileWidth  = (maxX - minX)/OPT::gridWidth;
+  float tileHeight = (maxY - minY)/OPT::gridHeight;
+  std::cout << tileWidth << std::endl;
+  std::cout << tileHeight << std::endl;
   for (uint32_t i = 0; i < OPT::gridHeight; i++)
   {
     for (uint32_t j = 0; j < OPT::gridWidth; j++)
@@ -225,10 +259,10 @@ int main(int argc, LPCTSTR* argv)
       pcl::PassThrough<pcl::PointXYZ> ptfilter(true);
       ptfilter.setInputCloud(ptcloud);
       
-      double tileXMin = minPt.x + tileWidth*j;	
-      double tileYMin = minPt.y + tileHeight*i;	
-      double tileXMax = minPt.x + tileWidth*(j + 1);	
-      double tileYMax = minPt.y + tileHeight*(i + 1);	
+      double tileXMin = minX + tileWidth*j;	
+      double tileYMin = minY + tileHeight*i;	
+      double tileXMax = minX + tileWidth*(j + 1);	
+      double tileYMax = minY + tileHeight*(i + 1);	
       
       boost::shared_ptr<std::vector<int> > indices_x(new std::vector<int>());
       ptfilter.setFilterFieldName("x");
