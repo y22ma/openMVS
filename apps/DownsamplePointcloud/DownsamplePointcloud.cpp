@@ -91,7 +91,7 @@ bool Initialize(size_t argc, LPCTSTR* argv)
   boost::program_options::options_description config("Scene Split Options");
   config.add_options()
         ("input-file,i", boost::program_options::value<std::string>(&OPT::strInputFileName), "input filename containing camera poses and image list")
-  	("skip-points", boost::program_options::value<unsigned>(&OPT::skip-points), "skip-points");
+  	("skip-points", boost::program_options::value<unsigned>(&OPT::skipPoints), "skip-points");
   
   boost::program_options::options_description cmdline_options;
   cmdline_options.add(generic).add(config);
@@ -188,25 +188,40 @@ int main(int argc, LPCTSTR* argv)
   }
   TD_TIMER_START();
 
+  Scene outputScene(scene);
+  outputScene.pointcloud.Release();
+
   // convert to pcl
   uint32_t idx = 0;
   for (uint32_t i = 0; i < scene.pointcloud.points.size(); i++)
   {
     if (i % OPT::skipPoints == 0)
     {
-      scene.pointcloud.points.RemoveIdx(idx);
-    }
-    else
-    {
-      idx++;
+      outputScene.pointcloud.points.InsertAt(0, scene.pointcloud.points[i]);
+      if (!scene.pointcloud.colors.IsEmpty())
+      {
+        outputScene.pointcloud.colors.InsertAt(0, scene.pointcloud.colors[i]); 
+      }
+      if (!scene.pointcloud.normals.IsEmpty())
+      {
+        outputScene.pointcloud.normals.InsertAt(0, scene.pointcloud.normals[i]); 
+      }
+      if (!scene.pointcloud.pointWeights.IsEmpty())
+      {
+        outputScene.pointcloud.pointWeights.InsertAt(0, scene.pointcloud.pointWeights[i]); 
+      }
+      if (!scene.pointcloud.pointViews.IsEmpty())
+      {
+        outputScene.pointcloud.pointViews.InsertAt(0, scene.pointcloud.pointViews[i]); 
+      }
     }
   }
 
   // save the final mesh
   const String baseFileName(MAKE_PATH_SAFE(Util::getFullFileName(OPT::strOutputFileName) +
       "_ds"));
-  scene.Save(baseFileName+_T(".mvs"), (ARCHIVE_TYPE)OPT::nArchiveType);
-  scene.pointcloud.Save(baseFileName+_T(".ply"));
+  outputScene.Save(baseFileName+_T(".mvs"), (ARCHIVE_TYPE)OPT::nArchiveType);
+  outputScene.pointcloud.Save(baseFileName+_T(".ply"));
   
   Finalize();
   return EXIT_SUCCESS;
