@@ -192,28 +192,52 @@ int main(int argc, LPCTSTR* argv)
   outputScene.pointcloud.Release();
 
   // convert to pcl
+  std::cout << "Resizing output pointcloud" << std::endl; 
   uint32_t idx = 0;
-  for (uint32_t i = 0; i < scene.pointcloud.points.size(); i++)
+  uint32_t dsPtSize = scene.pointcloud.points.size()/OPT::skipPoints;
+  outputScene.pointcloud.points.Resize(dsPtSize);
+  if (!scene.pointcloud.colors.IsEmpty())
+  {
+    outputScene.pointcloud.colors.Resize(dsPtSize); 
+  }
+  if (!scene.pointcloud.normals.IsEmpty())
+  {
+    outputScene.pointcloud.normals.Resize(dsPtSize); 
+  }
+  if (!scene.pointcloud.pointWeights.IsEmpty())
+  {
+    outputScene.pointcloud.pointWeights.Resize(dsPtSize); 
+  }
+  if (!scene.pointcloud.pointViews.IsEmpty())
+  {
+    outputScene.pointcloud.pointViews.Resize(dsPtSize); 
+  }
+
+  std::cout << "Inseriting points" << std::endl; 
+  uint32_t outputIdx = 0;
+  uint32_t iterLen = dsPtSize*OPT::skipPoints;
+  for (uint32_t i = 0; i < iterLen; i++)
   {
     if (i % OPT::skipPoints == 0)
     {
-      outputScene.pointcloud.points.InsertAt(0, scene.pointcloud.points[i]);
+      outputScene.pointcloud.points.SetAt(outputIdx, scene.pointcloud.points[i]);
       if (!scene.pointcloud.colors.IsEmpty())
       {
-        outputScene.pointcloud.colors.InsertAt(0, scene.pointcloud.colors[i]); 
+        outputScene.pointcloud.colors.SetAt(outputIdx, scene.pointcloud.colors[i]); 
       }
       if (!scene.pointcloud.normals.IsEmpty())
       {
-        outputScene.pointcloud.normals.InsertAt(0, scene.pointcloud.normals[i]); 
+        outputScene.pointcloud.normals.SetAt(outputIdx, scene.pointcloud.normals[i]); 
       }
       if (!scene.pointcloud.pointWeights.IsEmpty())
       {
-        outputScene.pointcloud.pointWeights.InsertAt(0, scene.pointcloud.pointWeights[i]); 
+        outputScene.pointcloud.pointWeights.SetAt(outputIdx, scene.pointcloud.pointWeights[i]); 
       }
       if (!scene.pointcloud.pointViews.IsEmpty())
       {
-        outputScene.pointcloud.pointViews.InsertAt(0, scene.pointcloud.pointViews[i]); 
+        outputScene.pointcloud.pointViews.SetAt(outputIdx, scene.pointcloud.pointViews[i]); 
       }
+      ++outputIdx;
     }
   }
 
