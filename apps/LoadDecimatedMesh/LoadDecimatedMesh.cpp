@@ -175,41 +175,31 @@ int main(int argc, LPCTSTR* argv)
   _CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);// | _CRTDBG_CHECK_ALWAYS_DF);
 #endif
   
-  std::cout << "yo0" << std::endl;
+  std::cout << "Initializing" << std::endl;
   if (!Initialize(argc, argv))
   {
     return EXIT_FAILURE;
   }
-  std::cout << "yo1" << std::endl;
   
   Scene scene(OPT::nMaxThreads);
-  std::cout << "yo2" << std::endl;
+  std::cout << "Loading Scene" << std::endl;
   // load and estimate a dense point-cloud
   if (!scene.Load(MAKE_PATH_SAFE(OPT::strInputFileName)))
   {
     std::cout << OPT::strInputFileName << std::endl;
     return EXIT_FAILURE;
   }
-  std::cout << "yo4" << std::endl;
-  if (scene.pointcloud.IsEmpty()) {
-    VERBOSE("error: empty initial point-cloud");
-    return EXIT_FAILURE;
-  }
   TD_TIMER_START();
 
-  std::cout << "yo5" << std::endl;
+  std::cout << "Copying scene" << std::endl;
   Scene outputScene(scene);
-  std::cout << "yo6" << std::endl;
+
+  std::cout << "Loading new mesh" << std::endl;
   outputScene.mesh.Release();
-  std::cout << "yo7" << std::endl;
   outputScene.mesh.Load(OPT::meshToLoad);
 
   // save the final mesh
-  std::cout << "yo8" << std::endl;
-  outputScene.mesh.Load(OPT::meshToLoad);
-  const String baseFileName(MAKE_PATH_SAFE(Util::getFullFileName(OPT::strOutputFileName) +
-      "_ds"));
-  std::cout << "yo9" << std::endl;
+  const String baseFileName(MAKE_PATH_SAFE(Util::getFullFileName(OPT::strOutputFileName)));
   outputScene.Save(baseFileName+_T(".mvs"), (ARCHIVE_TYPE)OPT::nArchiveType);
   
   Finalize();
