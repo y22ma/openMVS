@@ -199,6 +199,7 @@ int main(int argc, LPCTSTR* argv)
   outputScene.mesh.Load(OPT::meshToLoad);
 
   // save the final mesh
+  std::cout << "Saving new scene" << std::endl;
   const String baseFileName(MAKE_PATH_SAFE(Util::getFullFileName(OPT::strOutputFileName)));
   outputScene.Save(baseFileName+_T(".mvs"), (ARCHIVE_TYPE)OPT::nArchiveType);
   
