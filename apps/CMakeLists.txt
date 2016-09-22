@@ -2,6 +2,7 @@
 ADD_SUBDIRECTORY(InterfaceVisualSFM)
 ADD_SUBDIRECTORY(DensifyPointCloud)
 ADD_SUBDIRECTORY(ReconstructMesh)
+ADD_SUBDIRECTORY(PoissonMesh)
 ADD_SUBDIRECTORY(DownsamplePointcloud)
 ADD_SUBDIRECTORY(LoadDecimatedMesh)
 ADD_SUBDIRECTORY(RefineMesh)
