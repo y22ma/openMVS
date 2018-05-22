@@ -314,7 +314,7 @@ bool DepthMapsData::SelectViews(DepthData& depthData)
 	depthData.neighbors.CopyOf(scene.images[idxImage].neighbors);
 
 	// remove invalid neighbor views
-	const float fMinArea(0.12f);
+	const float fMinArea(0.0012f);
 	const float fMinScale(0.2f), fMaxScale(3.2f);
 	const float fMinAngle(FD2R(OPTDENSE::fMinAngle));
 	const float fMaxAngle(FD2R(OPTDENSE::fMaxAngle));
@@ -917,7 +917,7 @@ bool DepthMapsData::GapInterpolation(DepthData& depthData)
 					const Depth avg((depthFirst+depth)*0.5f);
 					do {
 						depthMap(v,u_curr) = avg;
-					} while (++u_curr<u);						
+					} while (++u_curr<u);
 					#else
 					// interpolate values
 					const Depth diff((depth-depthFirst)/(count+1));
@@ -927,7 +927,7 @@ bool DepthMapsData::GapInterpolation(DepthData& depthData)
 						do {
 							depthMap(v,u_curr) = (d+=diff);
 							if (!confMap.empty()) confMap(v,u_curr) = c;
-						} while (++u_curr<u);						
+						} while (++u_curr<u);
 					} else {
 						Point2f dir1, dir2;
 						Normal2Dir(normalMap(v,u_first), dir1);
@@ -938,7 +938,7 @@ bool DepthMapsData::GapInterpolation(DepthData& depthData)
 							dir1 += dirDiff;
 							Dir2Normal(dir1, normalMap(v,u_curr));
 							if (!confMap.empty()) confMap(v,u_curr) = c;
-						} while (++u_curr<u);						
+						} while (++u_curr<u);
 					}
 					#endif
 				}
@@ -983,7 +983,7 @@ bool DepthMapsData::GapInterpolation(DepthData& depthData)
 					const Depth avg((depthFirst+depth)*0.5f);
 					do {
 						depthMap(v_curr,u) = avg;
-					} while (++v_curr<v);						
+					} while (++v_curr<v);
 					#else
 					// interpolate values
 					const Depth diff((depth-depthFirst)/(count+1));
@@ -993,7 +993,7 @@ bool DepthMapsData::GapInterpolation(DepthData& depthData)
 						do {
 							depthMap(v_curr,u) = (d+=diff);
 							if (!confMap.empty()) confMap(v_curr,u) = c;
-						} while (++v_curr<v);						
+						} while (++v_curr<v);
 					} else {
 						Point2f dir1, dir2;
 						Normal2Dir(normalMap(v_first,u), dir1);
@@ -1004,7 +1004,7 @@ bool DepthMapsData::GapInterpolation(DepthData& depthData)
 							dir1 += dirDiff;
 							Dir2Normal(dir1, normalMap(v_curr,u));
 							if (!confMap.empty()) confMap(v_curr,u) = c;
-						} while (++v_curr<v);						
+						} while (++v_curr<v);
 					}
 					#endif
 				}
