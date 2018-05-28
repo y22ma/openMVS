@@ -31,7 +31,8 @@
 #else
 #ifndef VERBOSITY_LEVEL
 namespace SEACAVE { extern int g_nVerbosityLevel; }
-#define VERBOSITY_LEVEL g_nVerbosityLevel
+//#define VERBOSITY_LEVEL g_nVerbosityLevel
+#define VERBOSITY_LEVEL 2
 #endif
 #define VERBOSE LOG
 #define DEBUG_LEVEL(n,...)	{ if (n < VERBOSITY_LEVEL) VERBOSE(__VA_ARGS__); }
