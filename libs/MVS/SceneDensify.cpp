@@ -1706,7 +1706,7 @@ void Scene::DenseReconstructionEstimate(void* pData)
 			if (evtImage.idxImage >= data.images.GetSize()) {
 				// close working threads
 				data.events.AddEvent(new EVTClose);
-				return;
+				break;
 			}
 			// select views to reconstruct the depth-map for this image
 			const uint32_t idx = data.images[evtImage.idxImage];
