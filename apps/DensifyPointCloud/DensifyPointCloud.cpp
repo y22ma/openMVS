@@ -75,7 +75,7 @@ bool Initialize(size_t argc, LPCTSTR* argv)
 		("config-file,c", boost::program_options::value<std::string>(&OPT::strConfigFileName)->default_value(APPNAME _T(".cfg")), "file name containing program options")
 		("archive-type", boost::program_options::value<unsigned>(&OPT::nArchiveType)->default_value(2), "project archive type: 0-text, 1-binary, 2-compressed binary")
 		("process-priority", boost::program_options::value<int>(&OPT::nProcessPriority)->default_value(-1), "process priority (below normal by default)")
-		("max-threads", boost::program_options::value<unsigned>(&OPT::nMaxThreads)->default_value(1), "maximum number of threads (0 for using all available cores)")
+		("max-threads", boost::program_options::value<unsigned>(&OPT::nMaxThreads)->default_value(0), "maximum number of threads (0 for using all available cores)")
 		#if TD_VERBOSE != TD_VERBOSE_OFF
 		("verbosity,v", boost::program_options::value<int>(&g_nVerbosityLevel)->default_value(
 			#if TD_VERBOSE == TD_VERBOSE_DEBUG
@@ -94,7 +94,7 @@ bool Initialize(size_t argc, LPCTSTR* argv)
 		("output-file,o", boost::program_options::value<std::string>(&OPT::strOutputFileName), "output filename for storing the dense point-cloud")
 		("resolution-level", boost::program_options::value<unsigned>(&OPT::nResolutionLevel)->default_value(1), "how many times to scale down the images before point cloud computation")
 		("min-resolution", boost::program_options::value<unsigned>(&OPT::nMinResolution)->default_value(640), "do not scale images lower than this resolution")
-		("number-views", boost::program_options::value<unsigned>(&OPT::nNumViews)->default_value(0), "number of views used for depth-map estimation (0 - all neighbor views available)")
+		("number-views", boost::program_options::value<unsigned>(&OPT::nNumViews)->default_value(4), "number of views used for depth-map estimation (0 - all neighbor views available)")
 		("estimate-colors", boost::program_options::value<unsigned>(&OPT::nEstimateColors)->default_value(1), "estimate the colors for the dense point-cloud")
 		("estimate-normals", boost::program_options::value<unsigned>(&OPT::nEstimateNormals)->default_value(0), "estimate the normals for the dense point-cloud")
 		;
