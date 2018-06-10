@@ -202,6 +202,7 @@ bool PointCloud::Save(const String& fileName) const
 			ply.put_element(&vertex);
 		}
 	}
+    ply.release();
 
 	DEBUG_EXTRA("Point-cloud saved: %u points (%s)", points.GetSize(), TD_TIMER_GET_FMT().c_str());
 	return true;
