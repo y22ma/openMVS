@@ -87,7 +87,7 @@ public:
 	void RemovePoint(IDX idx);
 
 	bool Load(const String& fileName);
-	bool Save(const String& fileName) const;
+	bool Save(const String& fileName, PLY::FileType plyType = PLY::BINARY_LE) const;
 
 	#ifdef _USE_BOOST
 	// implement BOOST serialization
