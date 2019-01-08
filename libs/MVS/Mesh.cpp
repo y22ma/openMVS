@@ -1220,7 +1220,7 @@ namespace BasicPLY {
 		Mesh::Face* pFace;
 	};
 	static const PLY::PlyProperty face_props[] = {
-		{"vertex_indices", PLY::Uint32, PLY::Uint32, offsetof(Face,pFace), 1, PLY::Uint8, PLY::Uint8, offsetof(Face,num)}
+		{"vertex_index", PLY::Uint32, PLY::Uint32, offsetof(Face,pFace), 1, PLY::Uint8, PLY::Uint8, offsetof(Face,num)}
 	};
 	struct TexCoord {
 		uint8_t num;
@@ -1231,7 +1231,7 @@ namespace BasicPLY {
 		TexCoord tex;
 	};
 	static const PLY::PlyProperty face_tex_props[] = {
-		{"vertex_indices", PLY::Uint32, PLY::Uint32, offsetof(FaceTex,face.pFace), 1, PLY::Uint8, PLY::Uint8, offsetof(FaceTex,face.num)},
+		{"vertex_index", PLY::Uint32, PLY::Uint32, offsetof(FaceTex,face.pFace), 1, PLY::Uint8, PLY::Uint8, offsetof(FaceTex,face.num)},
 		{"texcoord", PLY::Float32, PLY::Float32, offsetof(FaceTex,tex.pTex), 1, PLY::Uint8, PLY::Uint8, offsetof(FaceTex,tex.num)}
 	};
 	// list of the kinds of elements in the PLY
