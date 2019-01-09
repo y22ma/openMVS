@@ -223,13 +223,7 @@ int main(int argc, LPCTSTR* argv)
       {
         continue;
       }
-      if (pixel.y < 0 || pixel.y >= imageData.height)
-      {
-        continue;
-      }
 
-      //std::cout << "idxImage: " << idxImage << " width: " << imageData.width << " height: "
-      //          << imageData.height << " x " << pixel.x << " y " << pixel.y << std::endl;
       views.Insert(idxImage);
       weights.Insert(0.01f);
     }
