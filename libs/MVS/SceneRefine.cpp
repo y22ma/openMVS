@@ -1058,16 +1058,27 @@ void MeshRefine::WaitThreadWorkers(size_t nJobs)
 		sem.Wait();
 	ASSERT(events.IsEmpty());
 }
-void MeshRefine::ThSelectNeighbors(uint32_t idxImage, std::unordered_set<uint64_t>& mapPairs, unsigned nMaxViews)
+void MeshRefine::ThSelectNeighbors(uint32_t idxImage,
+    std::unordered_set<uint64_t>& mapPairs, unsigned nMaxViews)
 {
 	// keep only best neighbor views
-	const float fMinArea(0.12f);
+	const float fMinArea(0.0012f);
 	const float fMinScale(0.2f), fMaxScale(3.2f);
 	const float fMinAngle(FD2R(2.5f)), fMaxAngle(FD2R(45.f));
 	const Image& imageData = images[idxImage];
 	if (!imageData.IsValid())
 		return;
+
 	ViewScoreArr neighbors(imageData.neighbors);
+        if (neighbors.GetSize() == 0)
+        {
+	    IndexArr points; // indices of the sparse 3D points seen by the this image
+	    if (!scene.SelectNeighborViews(idxImage, points, 2, 2, 12.0))
+            {
+	    	return;
+            }
+        }
+
 	Scene::FilterNeighborViews(neighbors, fMinArea, fMinScale, fMaxScale, fMinAngle, fMaxAngle, nMaxViews);
 	Lock l(cs);
 	FOREACHPTR(pNeighbor, neighbors) {
@@ -1293,7 +1304,10 @@ bool Scene::RefineMesh(unsigned nResolutionLevel, unsigned nMinResolution, unsig
 {
 	MeshRefine refine(*this, nReduceMemory, nAlternatePair, fRegularityWeight, fRatioRigidityElasticity, nResolutionLevel, nMinResolution, nMaxViews, nMaxThreads);
 	if (!refine.IsValid())
-		return false;
+        {
+                printf("not valid refine\n");
+        	return false;
+        }
 
 	// run the mesh optimization on multiple scales (coarse to fine)
 	for (unsigned nScale=0; nScale<nScales; ++nScale) {
