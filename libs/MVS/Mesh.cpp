@@ -1531,21 +1531,32 @@ bool Mesh::SaveOBJ(const String& fileName) const
 
 	// store faces
 	ObjModel::Group& group = model.AddGroup(_T("material_0"));
-	group.faces.reserve(faces.GetSize());
+	ASSERT(faces.GetSize() < faces_no_id.size());
+	group.faces.reserve(faces.GetSize() - faces_no_id.size());
+	// group.faces.reserve(faces.GetSize());
 	FOREACH(idxFace, faces) {
+		if (std::find(faces_no_id.begin(), faces_no_id.end(), idxFace) != faces_no_id.end()) {
+			std::cout << "Face: " << idxFace << " is a face with NO_ID!" << std::endl;
+			continue;
+		}
+
 		const Face& face = faces[idxFace];
 		ObjModel::Face f;
 		memset(&f, 0xFF, sizeof(ObjModel::Face));
 		for (int i=0; i<3; ++i) {
 			f.vertices[i] = face[i];
+			
 			if (!faceTexcoords.IsEmpty())
 				f.texcoords[i] = idxFace*3+i;
+
 			if (!vertexNormals.IsEmpty())
 				f.normals[i] = face[i];
 		}
 		group.faces.push_back(f);
 	}
 
+	std::cout << "Faces size: " << faces.GetSize() << std::endl;
+	std::cout << "Faces no ID size: " << faces_no_id.size() << std::endl;
 	// store texture
 	ObjModel::MaterialLib::Material* pMaterial(model.GetMaterial(group.material_name));
 	ASSERT(pMaterial != NULL);

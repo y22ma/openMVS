@@ -97,9 +97,11 @@ bool Scene::LoadInterface(const String & fileName)
 	images.Reserve((uint32_t)obj.images.size());
 	for (Interface::ImageArr::const_iterator it=obj.images.begin(); it!=obj.images.end(); ++it) {
 		const Interface::Image& image = *it;
+
 		const uint32_t ID(images.GetSize());
 		Image& imageData = images.AddEmpty();
 		imageData.name = image.name;
+
 		Util::ensureUnifySlash(imageData.name);
 		imageData.name = MAKE_PATH_FULL(WORKING_FOLDER_FULL, imageData.name);
 		imageData.poseID = image.poseID;

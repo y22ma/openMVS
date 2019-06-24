@@ -448,6 +448,7 @@ public:
 	// constant the entire time
 	Mesh::VertexArr& vertices;
 	Mesh::FaceArr& faces;
+	std::vector<IDX>& faces_no_id;
 	ImageArr& images;
 	ViewsArr views; // views' data
 
@@ -464,6 +465,7 @@ MeshTexture::MeshTexture(Scene& _scene, unsigned _nResolutionLevel, unsigned _nM
 	textureDiffuse(_scene.mesh.textureDiffuse),
 	vertices(_scene.mesh.vertices),
 	faces(_scene.mesh.faces),
+	faces_no_id(_scene.mesh.faces_no_id),
 	images(_scene.images),
 	scene(_scene)
 {
@@ -1102,6 +1104,7 @@ void MeshTexture::FaceViewSelection(float fOutlierThreshold, float fRatioDataSmo
 				if (label == NO_ID) {
 					texturePatch.label = NO_ID;
 					texturePatches.Last().faces.Insert(f);
+					faces_no_id.emplace_back(f);
 				} else {
 					if (texturePatch.faces.IsEmpty()) {
 						texturePatch.label = label;
@@ -1110,6 +1113,7 @@ void MeshTexture::FaceViewSelection(float fOutlierThreshold, float fRatioDataSmo
 					texturePatch.faces.Insert(f);
 				}
 			}
+			
 			// remove all patches with invalid label (except the last one)
 			// and create the map from the old index to the new one
 			mapIdxPatch.Resize(nComponents);
@@ -1955,6 +1959,7 @@ void MeshTexture::GenerateTexture(bool bGlobalSeamLeveling, bool bLocalSeamLevel
 			ASSERT((rect.width == texturePatch.rect.width && rect.height == texturePatch.rect.height) ||
 				   (rect.height == texturePatch.rect.width && rect.width == texturePatch.rect.height));
 			int x(0), y(1);
+			
 			if (texturePatch.label != NO_ID) {
 				const Image& imageData = images[texturePatch.label];
 				cv::Mat patch(imageData.image(texturePatch.rect));
@@ -1965,6 +1970,7 @@ void MeshTexture::GenerateTexture(bool bGlobalSeamLeveling, bool bLocalSeamLevel
 				}
 				patch.copyTo(textureDiffuse(rect));
 			}
+
 			// compute final texture coordinates
 			const TexCoord offset(rect.tl());
 			FOREACHPTR(pIdxFace, texturePatch.faces) {
@@ -2009,6 +2015,8 @@ bool Scene::TextureMesh(unsigned nResolutionLevel, unsigned nMinResolution, floa
 		texture.GenerateTexture(bGlobalSeamLeveling, bLocalSeamLeveling, nTextureSizeMultiple, nRectPackingHeuristic, colEmpty);
 		DEBUG_EXTRA("Generating texture atlas and image completed: %u patches, %u image size (%s)", texture.texturePatches.GetSize(), mesh.textureDiffuse.width(), TD_TIMER_GET_FMT().c_str());
 	}
+
+	
 
 	return true;
 } // TextureMesh

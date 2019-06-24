@@ -81,6 +81,7 @@ public:
 public:
 	VertexArr vertices;
 	FaceArr faces;
+	std::vector<IDX> faces_no_id;
 
 	NormalArr vertexNormals; // for each vertex, the normal to the surface in that point (optional)
 	VertexVerticesArr vertexVertices; // for each vertex, the list of adjacent vertices (optional)
