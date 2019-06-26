@@ -1047,9 +1047,18 @@ returns the index to position in list
 
 int PLY::find_property(PlyElement *elem, const char *prop_name) const
 {
-	for (size_t i=0; i<elem->props.size(); ++i)
-		if (equal_strings(prop_name, elem->props[i]->name.c_str()))
+	std::string vertex_index = "vertex_index";
+	std::string vertex_indices = "vertex_indices";
+
+	for (size_t i=0; i<elem->props.size(); ++i) {
+		if (equal_strings(prop_name, elem->props[i]->name.c_str())) {
 			return (int)i;
+		} else if (equal_strings(prop_name, vertex_index.c_str()) 
+							&& equal_strings(elem->props[i]->name.c_str(), vertex_indices.c_str())) {
+			return (int)i;
+		}
+	}
+						
 	return -1;
 }
 
